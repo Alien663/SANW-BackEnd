@@ -50,7 +50,7 @@ namespace WebAPI.Filter
                             CookieOptions options = new CookieOptions();
                             options.HttpOnly = true;
                             options.Secure = true;
-                            options.Domain = "an990154054";
+                            //options.Domain = "an990154054";
                             //options.Domain = "localhost";
                             context.HttpContext.Response.Cookies.Append("Token", new_token, options);
                             context.HttpContext.Response.Cookies.Append("RefreshToken", new_refresh, options);

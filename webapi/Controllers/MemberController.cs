@@ -37,7 +37,7 @@ namespace WebAPI.Controllers
                     options.Secure = true;
                     options.SameSite = SameSiteMode.None;
                     options.Expires = DateTimeOffset.Now.AddDays(1);
-                    options.Domain = "an990154054";
+                    //options.Domain = "an990154054";
                     //options.Domain = "localhost";
                     options.Path = "/";
 
@@ -79,7 +79,7 @@ namespace WebAPI.Controllers
             options.Secure = true;
             options.SameSite = SameSiteMode.None;
             options.Expires = DateTimeOffset.Now.AddDays(1);
-            options.Domain = "an990154054";
+            //options.Domain = "an990154054";
             //options.Domain = "localhost";
             options.Path = "/";
             Response.Cookies.Delete("Token", options);
