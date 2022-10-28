@@ -50,5 +50,34 @@ namespace WebAPI.Controllers
                 return Ok(new { data, counts.counts });
             }
         }
+
+        [HttpPost("download")]
+        public IActionResult DownloadGridView([FromBody] ProductCondition condition)
+        {
+            using (var db = new AppDb())
+            {
+                string sql = @"
+                    declare @_category int = @Category
+                    declare @_supplier int = @Supplier
+                    declare @_price float = @Price
+                    declare @_product varchar(40)= @ProductName
+                    select ProductID, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryID, CategoryName, [Description], SupplierID, Supplier, ContactName, ContactTitle
+                    from vd_Product
+                    where Discontinued = @Discontinued
+                    ";
+                sql += condition.Category == 0 ? "" : " and CategoryID = @_category ";
+                sql += condition.Supplier == 0 ? "" : " and SupplierID = @_supplier ";
+                sql += condition.Price == 0 ? "" : " and UnitPrice >= @_price ";
+                sql += string.IsNullOrEmpty(condition.ProductName) ? "" : " and ProductName = @_product ";
+
+                List<PorductModel> data = db.Connection.Query<PorductModel>(sql, new { condition.Discontinued, condition.Category, condition.Supplier, condition.Price, condition.ProductName }).ToList();
+                ExcelComponent myexcel = new ExcelComponent();
+                byte[] excelFile = myexcel.export(data);
+
+                HttpContext.Response.ContentType = "application/octet-stream";
+                HttpContext.Response.Headers.Add("Content-Disposition", "attachment;filename=Products.xlsx");
+                return File(excelFile, "application/octet-stream");
+            }
+        }
     }
 }
