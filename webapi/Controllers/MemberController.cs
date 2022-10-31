@@ -94,7 +94,7 @@ namespace WebAPI.Controllers
             using(var db = new AppDb())
             {
                 string sql = @"select UUID, Account, EMail, NickName, Since, ModifyDatetime from vd_Member where MID = @mid";
-                var mid = HttpContext.Items["MID"];
+                int mid = int.Parse(HttpContext.Items["MID"].ToString());
                 MemberModel data = db.Connection.QueryFirstOrDefault<MemberModel>(sql, new { mid });
                 return Ok(new { data.UUID, data.Account, data.EMail, data.NickName, data.Since, data.ModifyDatetime });
             }

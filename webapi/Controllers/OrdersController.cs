@@ -8,6 +8,7 @@ using Dapper;
 using WebAPI.Lib;
 using WebAPI.Model;
 using NPOI.HPSF;
+using NPOI.HSSF.Record.PivotTable;
 
 namespace WebAPI.Controllers
 {
@@ -30,12 +31,12 @@ namespace WebAPI.Controllers
                     declare @_shipper int = @Shipper
                     select OrderID, CustomerID, OrderDate, ShipName, Shipper, ShipRegion, ShipCountry, ShipCity, ShipPostalCode, ShipAddress, ShippedDate, Employee, JobTitle, Region, Country, City, PostalCode, [Address]
                     from vd_OrderGridView
-                    where OrderDate >= @OrderDate ";
+                    where OrderDate >= @_OrderDate ";
                 sql += condition.Shipper == 0 ? "" : " and ShipperID = @_shipper ";
                 sql += @" order by OrderID
                     offset(@page)*@pagesize ROWS
                     fetch next @pagesize rows only";
-                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition.OrderDate, condition.Shipper, condition.page, condition.pagesize }).ToList();
+                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition._OrderDate, condition.Shipper, condition.page, condition.pagesize }).ToList();
                 return Ok(new { data, counts.counts });
             }
         }
@@ -50,15 +51,27 @@ namespace WebAPI.Controllers
                     declare @_shipper int = @Shipper
                     select OrderID, CustomerID, OrderDate, ShipName, Shipper, ShipRegion, ShipCountry, ShipCity, ShipPostalCode, ShipAddress, ShippedDate, Employee, JobTitle, Region, Country, City, PostalCode, [Address]
                     from vd_OrderGridView
-                    where OrderDate >= @OrderDate ";
+                    where OrderDate >= @_OrderDate ";
                 sql += condition.Shipper == 0 ? "" : " and ShipperID = @_shipper ";
-                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition.OrderDate, condition.Shipper }).ToList();
+                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition._OrderDate, condition.Shipper }).ToList();
                 ExcelComponent myexcel = new ExcelComponent();
                 byte[] excelFile = myexcel.export(data);
 
                 HttpContext.Response.ContentType = "application/octet-stream";
                 HttpContext.Response.Headers.Add("Content-Disposition", "attachment;filename=Orders.xlsx");
                 return File(excelFile, "application/octet-stream");
+            }
+        }
+
+        [HttpGet("{OID}")]
+        public IActionResult GetOrderDetail(int OID)
+        {
+            using (var db = new AppDb())
+            {
+                string sql = @"select OrderID, CustomerID, OrderDate, ShipName, Shipper, ShipRegion, ShipCountry, ShipCity, ShipPostalCode, ShipAddress, ShippedDate, Employee, JobTitle, Region, Country, City, PostalCode, [Address]
+                    from vd_OrderGridView wehre OrderID = @OID";
+                OrdersModel data = db.Connection.QueryFirstOrDefault(sql, new { OID });
+                return Ok(data);
             }
         }
     }
