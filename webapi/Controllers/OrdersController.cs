@@ -41,7 +41,6 @@ namespace WebAPI.Controllers
             }
         }
 
-
         [HttpPost("download")]
         public IActionResult DownloadGridView([FromBody] OrderSearchCondition condition)
         {
@@ -72,6 +71,25 @@ namespace WebAPI.Controllers
                     from vd_OrderGridView wehre OrderID = @OID";
                 OrdersModel data = db.Connection.QueryFirstOrDefault(sql, new { OID });
                 return Ok(data);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrder([FromBody] OrdersModel payload)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_OrderUpdate";
+                    var p = new DynamicParameters();
+                    db.Connection.Execute(sql, p);
+                    return Ok();
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message.ToString());
             }
         }
     }
