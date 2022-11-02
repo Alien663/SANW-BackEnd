@@ -46,7 +46,7 @@ namespace WebAPI.Controllers
                     order by ProductID
                     offset(@page)*@pagesize ROWS
                     fetch next @pagesize rows only";
-                List<PorductModel> data = db.Connection.Query<PorductModel>(sql, new { condition.Discontinued, condition.Category, condition.Supplier, condition.Price, condition.ProductName, condition.page, condition.pagesize }).ToList();
+                List<ProductModel> data = db.Connection.Query<ProductModel>(sql, new { condition.Discontinued, condition.Category, condition.Supplier, condition.Price, condition.ProductName, condition.page, condition.pagesize }).ToList();
                 return Ok(new { data, counts.counts });
             }
         }
@@ -70,13 +70,78 @@ namespace WebAPI.Controllers
                 sql += condition.Price == 0 ? "" : " and UnitPrice >= @_price ";
                 sql += string.IsNullOrEmpty(condition.ProductName) ? "" : " and ProductName = @_product ";
 
-                List<PorductModel> data = db.Connection.Query<PorductModel>(sql, new { condition.Discontinued, condition.Category, condition.Supplier, condition.Price, condition.ProductName }).ToList();
+                List<ProductModel> data = db.Connection.Query<ProductModel>(sql, new { condition.Discontinued, condition.Category, condition.Supplier, condition.Price, condition.ProductName }).ToList();
                 ExcelComponent myexcel = new ExcelComponent();
                 byte[] excelFile = myexcel.export(data);
 
                 HttpContext.Response.ContentType = "application/octet-stream";
                 HttpContext.Response.Headers.Add("Content-Disposition", "attachment;filename=Products.xlsx");
                 return File(excelFile, "application/octet-stream");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrder([FromBody] ProductModel payload)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_ProductUpdate";
+                    var p = new DynamicParameters();
+                    p.Add("@ProductID", payload.ProductID);
+                    p.Add("@ProductName", payload.ProductName);
+                    p.Add("@QuantityPerUnit", payload.QuantityPerUnit);
+                    p.Add("@UnitPrice", payload.UnitPrice);
+                    p.Add("@UnitsInStock", payload.UnitsInStock);
+                    p.Add("@UnitsOnOrder", payload.UnitsOnOrder);
+                    p.Add("@ReorderLevel", payload.ReorderLevel);
+                    p.Add("@Discontinued", payload.Discontinued);
+                    db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
+                    return Ok();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message.ToString());
+            }
+        }
+
+        [HttpPut]
+        public IActionResult CreateProduct([FromBody] ProductModel payload)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_ProductCreate";
+                    var p = new DynamicParameters();
+                    db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult DeleteProduct([FromBody] int ProductID)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_ProductDelete";
+                    var p = new DynamicParameters();
+                    db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

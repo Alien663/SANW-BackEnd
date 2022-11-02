@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WebAPI.Model
 {
-    public class PorductModel
+    public class ProductModel
     {
         public int ProductID { get; set; }
         public string ProductName { get; set; }

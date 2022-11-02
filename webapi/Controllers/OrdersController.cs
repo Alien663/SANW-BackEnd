@@ -9,6 +9,7 @@ using WebAPI.Lib;
 using WebAPI.Model;
 using NPOI.HPSF;
 using NPOI.HSSF.Record.PivotTable;
+using NPOI.SS.Util;
 
 namespace WebAPI.Controllers
 {
@@ -36,7 +37,7 @@ namespace WebAPI.Controllers
                 sql += @" order by OrderID
                     offset(@page)*@pagesize ROWS
                     fetch next @pagesize rows only";
-                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition._OrderDate, condition.Shipper, condition.page, condition.pagesize }).ToList();
+                List<OrderModel> data = db.Connection.Query<OrderModel>(sql, new { condition._OrderDate, condition.Shipper, condition.page, condition.pagesize }).ToList();
                 return Ok(new { data, counts.counts });
             }
         }
@@ -52,7 +53,7 @@ namespace WebAPI.Controllers
                     from vd_OrderGridView
                     where OrderDate >= @_OrderDate ";
                 sql += condition.Shipper == 0 ? "" : " and ShipperID = @_shipper ";
-                List<OrdersModel> data = db.Connection.Query<OrdersModel>(sql, new { condition._OrderDate, condition.Shipper }).ToList();
+                List<OrderModel> data = db.Connection.Query<OrderModel>(sql, new { condition._OrderDate, condition.Shipper }).ToList();
                 ExcelComponent myexcel = new ExcelComponent();
                 byte[] excelFile = myexcel.export(data);
 
@@ -69,13 +70,13 @@ namespace WebAPI.Controllers
             {
                 string sql = @"select OrderID, CustomerID, OrderDate, ShipName, Shipper, ShipRegion, ShipCountry, ShipCity, ShipPostalCode, ShipAddress, ShippedDate, Employee, JobTitle, Region, Country, City, PostalCode, [Address]
                     from vd_OrderGridView wehre OrderID = @OID";
-                OrdersModel data = db.Connection.QueryFirstOrDefault(sql, new { OID });
+                OrderModel data = db.Connection.QueryFirstOrDefault(sql, new { OID });
                 return Ok(data);
             }
         }
 
         [HttpPost]
-        public IActionResult UpdateOrder([FromBody] OrdersModel payload)
+        public IActionResult UpdateOrder([FromBody] OrderModel payload)
         {
             try
             {
@@ -83,13 +84,62 @@ namespace WebAPI.Controllers
                 {
                     string sql = @"xp_OrderUpdate";
                     var p = new DynamicParameters();
-                    db.Connection.Execute(sql, p);
+                    p.Add("@OrderID", payload.OrderID);
+                    p.Add("@CustomerID", payload.CustomerID);
+                    p.Add("@OrderDate", payload.OrderDate);
+                    p.Add("@ShipName", payload.ShipName);
+                    p.Add("@ShipRegion", payload.ShipRegion);
+                    p.Add("@ShipCountry", payload.ShipCountry);
+                    p.Add("@ShipCity", payload.ShipCity);
+                    p.Add("@ShipPostalCode", payload.ShipPostalCode);
+                    p.Add("@ShipAddress", payload.ShipAddress);
+                    p.Add("@ShippedDate", payload.ShippedDate);
+                    db.Connection.Execute(sql, p, commandType:System.Data.CommandType.StoredProcedure);
                     return Ok();
                 }
             }
             catch(Exception ex)
             {
                 return BadRequest(ex.Message.ToString());
+            }
+        }
+
+
+        [HttpPut]
+        public IActionResult CreateOrder([FromBody] OrderModel payload)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_OrderCreate";
+                    var p = new DynamicParameters();
+                    db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult DeleteOrder([FromBody] int OrderID)
+        {
+            try
+            {
+                using (var db = new AppDb())
+                {
+                    string sql = @"xp_OrderDelete";
+                    var p = new DynamicParameters();
+                    db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
+                }
+                return Ok();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }
