@@ -11,7 +11,7 @@ namespace WebAPI.Model
         public string CustomerID { get; set; }
         public DateTime OrderDate { get; set; }
         public string ShipName { get; set; }
-        public string Shipper { get; set; }
+        public int Shipper { get; set; }
         public string ShipRegion { get; set; }
         public string ShipCountry { get; set; }
         public string ShipCity { get; set; }

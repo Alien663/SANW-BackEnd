@@ -21,8 +21,7 @@ namespace WebAPI.Controllers
                     declare @_supplier int = @Supplier
                     declare @_price float = @Price
                     declare @_product varchar(40)= @ProductName
-                    select count(*) as counts from vd_Product where Discontinued = @Discontinued
-                    ";
+                    select count(*) as counts from vd_Product where Discontinued = @Discontinued";
                 sqlcount += condition.Category == 0 ? "" : " and CategoryID = @_category ";
                 sqlcount += condition.Supplier == 0 ? "" : " and SupplierID = @_supplier ";
                 sqlcount += condition.Price == 0 ? "" : " and UnitPrice >= @_price ";
@@ -34,10 +33,9 @@ namespace WebAPI.Controllers
                     declare @_supplier int = @Supplier
                     declare @_price float = @Price
                     declare @_product varchar(40)= @ProductName
-                    select ProductID, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryID, CategoryName, [Description], SupplierID, Supplier, ContactName, ContactTitle
+                    select ProductID, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, Category, CategoryName, [Description], Supplier, SupplierName, ContactName, ContactTitle
                     from vd_Product
-                    where Discontinued = @Discontinued
-                    ";
+                    where Discontinued = @Discontinued";
                 sql += condition.Category == 0 ? "" : " and CategoryID = @_category ";
                 sql += condition.Supplier == 0 ? "" : " and SupplierID = @_supplier ";
                 sql += condition.Price == 0 ? "" : " and UnitPrice >= @_price ";
@@ -61,10 +59,9 @@ namespace WebAPI.Controllers
                     declare @_supplier int = @Supplier
                     declare @_price float = @Price
                     declare @_product varchar(40)= @ProductName
-                    select ProductID, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryID, CategoryName, [Description], SupplierID, Supplier, ContactName, ContactTitle
+                    select ProductID, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, CategoryName, CategoryName, [Description], SupplierName, ContactName, ContactTitle
                     from vd_Product
-                    where Discontinued = @Discontinued
-                    ";
+                    where Discontinued = @Discontinued";
                 sql += condition.Category == 0 ? "" : " and CategoryID = @_category ";
                 sql += condition.Supplier == 0 ? "" : " and SupplierID = @_supplier ";
                 sql += condition.Price == 0 ? "" : " and UnitPrice >= @_price ";
@@ -90,6 +87,8 @@ namespace WebAPI.Controllers
                     string sql = @"xp_ProductUpdate";
                     var p = new DynamicParameters();
                     p.Add("@ProductID", payload.ProductID);
+                    p.Add("@Supplier", payload.Supplier);
+                    p.Add("@Category", payload.Category);
                     p.Add("@ProductName", payload.ProductName);
                     p.Add("@QuantityPerUnit", payload.QuantityPerUnit);
                     p.Add("@UnitPrice", payload.UnitPrice);
@@ -135,6 +134,7 @@ namespace WebAPI.Controllers
                 {
                     string sql = @"xp_ProductDelete";
                     var p = new DynamicParameters();
+                    p.Add("@ProductID", ProductID);
                     db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
                 }
                 return Ok();

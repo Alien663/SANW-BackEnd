@@ -14,7 +14,7 @@ using NPOI.SS.Util;
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
-    public class OrdersController : ControllerBase
+    public class OrderController : ControllerBase
     {
         [HttpPost("gridview")]
         public IActionResult GetGridView([FromBody] OrderSearchCondition condition)
@@ -85,6 +85,7 @@ namespace WebAPI.Controllers
                     string sql = @"xp_OrderUpdate";
                     var p = new DynamicParameters();
                     p.Add("@OrderID", payload.OrderID);
+                    p.Add("@Shipper", payload.Shipper);
                     p.Add("@CustomerID", payload.CustomerID);
                     p.Add("@OrderDate", payload.OrderDate);
                     p.Add("@ShipName", payload.ShipName);
@@ -133,6 +134,7 @@ namespace WebAPI.Controllers
                 {
                     string sql = @"xp_OrderDelete";
                     var p = new DynamicParameters();
+                    p.Add("@OrderID", OrderID);
                     db.Connection.Execute(sql, p, commandType: System.Data.CommandType.StoredProcedure);
                 }
                 return Ok();
