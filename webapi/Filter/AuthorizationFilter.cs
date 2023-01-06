@@ -17,7 +17,7 @@ namespace WebAPI.Filter
         {
             string token = context.HttpContext.Request.Cookies.Where(x => x.Key == "Token").FirstOrDefault().Value;
             string refresh = context.HttpContext.Request.Cookies.Where(x => x.Key == "RefreshToken").FirstOrDefault().Value;
-            if (false)
+            if (true)
             {
                 try
                 {

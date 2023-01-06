@@ -39,7 +39,7 @@ namespace WebAPI.Lib
                 }
             }
             MemoryStream stream = new MemoryStream();
-            this.workbook.Write(stream);
+            this.workbook.Write(stream, false);
             stream.Flush();
             byte[] result = stream.ToArray();
             stream.Close();
