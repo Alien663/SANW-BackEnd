@@ -17,9 +17,10 @@ namespace WebAPI.Filter
         {
             string token = context.HttpContext.Request.Cookies.Where(x => x.Key == "Token").FirstOrDefault().Value;
             string refresh = context.HttpContext.Request.Cookies.Where(x => x.Key == "RefreshToken").FirstOrDefault().Value;
-            if (true)
-            {
-                try
+            #if DEBUG
+            context.HttpContext.Items.Add("MID", 1);
+            #else
+            try
                 {
                     using (var db = new AppDb())
                     {
@@ -62,11 +63,7 @@ namespace WebAPI.Filter
                         throw ex;
                     }
                 }
-            }
-            else
-            {
-                context.HttpContext.Items.Add("MID", 1);
-            }
+                #endif
         }
     }
 }
